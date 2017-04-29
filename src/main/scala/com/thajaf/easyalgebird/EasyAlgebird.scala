@@ -27,7 +27,7 @@ object EasyAlgebird {
     data:         TypedPipe[T],
     primaryKey:   T => P,
     agg:          Aggregator[T, B, List[AttributeValue[S, V]]],
-    reducerCount: Int = 108
+    reducerCount: Int 
   ): TypedPipe[AggregatedData[P, S, V]] =
     data.groupBy( primaryKey )
       .aggregate( agg )
@@ -50,35 +50,32 @@ object EasyAlgebird {
     */
   private def addMoreAttributeValue[T <: ThriftStruct, P: Ordering, S, V](
     aggregatedData: TypedPipe[AggregatedData[P, S, V]],
-    f:              AggregatedData[P, S, V] => List[AttributeValue[S, V]]
+    f: AggregatedData[P, S, V] => List[AttributeValue[S, V]]
   ) = aggregatedData.map { agg => AggregatedData( agg.primaryKey, agg.list ++ f( agg ) ) }
 
   /** Method to convert an aggregated data to
     * pivoted data
     */
   def transposeAggData[T <: Product, P, S, V](
-    typedPipe:         TypedPipe[AggregatedData[P, S, V]],
-    f:                 ( P, AttributeValue[S, V] ) => T,
-    pivotBasedOnField: AggregatedData[P, S, V] => List[AttributeValue[S, V]] = ( agg: AggregatedData[P, S, V] ) => agg.list
-  ): TypedPipe[T] = {
-    def convertAggregationToOutput( x: AggregatedData[P, S, V] ): List[T] = {
-      pivotBasedOnField( x ).map { eachParValue => f( x.primaryKey, eachParValue ) }
-    }
-
-    typedPipe.flatMap( convertAggregationToOutput )
-  }
+    typedPipe: TypedPipe[AggregatedData[P, S, V]],
+    f:( P, AttributeValue[S, V] ) => T,
+    pivotBasedOnField: AggregatedData[P, S, V] => List[AttributeValue[S, V]] = 
+      ( agg: AggregatedData[P, S, V] ) => agg.list
+  ): TypedPipe[T] = 
+    typedPipe.flatMap( pivotBasedOnField( _ ).map { eachParValue => f( x.primaryKey, eachParValue ) } )
+ 
 
   /** Pivot Simple Data on Map, further abstraction was possible, but didn't do */
   def pivotOnMap[T <: Product, U <: Product, S, V](
-    typedPipe:         TypedPipe[T],
-    f:                 ( T, AttributeValue[S, V] ) => U,
+    typedPipe: TypedPipe[T],
+    f: ( T, AttributeValue[S, V] ) => U,
     pivotBasedOnField: T => Map[S, V]
   ): TypedPipe[U] =
     pivotAggregatedData( typedPipe.map( t => AggregatedData( t, toListOfApv( pivotBasedOnField( t ) ) ) ), f )
 
   /** to pivot based a data based on a field, that can potentially be a list, further abstraction was possible though */
   def pivotOnArray[T1 <: Product, T2 <: Product, V](
-    typedPipe:       TypedPipe[T1],
+    typedPipe: TypedPipe[T1],
     pivotBasedField: T1 => List[V],
     f:               PivotedData[T1, V] => T2
   ): TypedPipe[T2] = typedPipe.flatMap( t => pivotBasedField( t ).map( eachValue => f( PivotedData( t, eachValue ) ) ) )
@@ -99,7 +96,7 @@ object EasyAlgebird {
     * an aggregated data set, based on a condition
     */
   def countEvent[T <: ThriftStruct](
-    condition:   T => Boolean,
+    condition: T => Boolean,
     measureName: Measure
   ) = com.twitter.algebird.Aggregator.count( condition ).andThenPresent( t => AttributeValue( measureName.toString, t ) )
 
@@ -107,7 +104,7 @@ object EasyAlgebird {
     * data set
     */
   def sum[T <: ThriftStruct](
-    field:       T => Long,
+    field: T => Long,
     measureName: Measure
   ): MonoidAggregator[T, Long, AttributeValue[String, Long]] = prepareMonoid( field ).andThenPresent( t => AttributeValue( measureName.toString, t ) )
   
