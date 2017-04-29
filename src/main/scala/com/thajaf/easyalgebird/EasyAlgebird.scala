@@ -106,7 +106,8 @@ object EasyAlgebird {
   def sum[T <: ThriftStruct](
     field: T => Long,
     measureName: Measure
-  ): MonoidAggregator[T, Long, AttributeValue[String, Long]] = prepareMonoid( field ).andThenPresent( t => AttributeValue( measureName.toString, t ) )
+  ): MonoidAggregator[T, Long, AttributeValue[String, Long]] = 
+    prepareMonoid( field ).andThenPresent( t => AttributeValue( measureName.toString, t ) )
   
   class ProductOrder[T <: Product] extends Ordering[T] {
     def compare( x: T, y: T ): Int =
