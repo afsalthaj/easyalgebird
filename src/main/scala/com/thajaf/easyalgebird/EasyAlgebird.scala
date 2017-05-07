@@ -126,8 +126,7 @@ object EasyAlgebird {
   class ThriftOrder[T <: Product] extends Ordering[T] {
     def compare( x: T, y: T ): Int =
       ( 0 to x.productArity - 1 )
-        .map( i => compareItems( x.productElement( i ), y.productElement( i ) ) )
-        .find( _ != 0 )
+        .find( i => compareItems( x.productElement( i ), y.productElement( i ) ) != 0)
         .getOrElse( 0 )
 
     def compareItems( left: Any, right: Any ): Int = {
