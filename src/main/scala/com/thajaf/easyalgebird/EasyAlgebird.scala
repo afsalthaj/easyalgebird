@@ -8,7 +8,7 @@ import com.twitter.algebird.{ MonoidAggregator, Aggregator }
 
 import java.nio.ByteBuffer
 
-/** A maeasure represents an aggregated value */
+/** A measure represents an aggregated value */
 trait Measure
 
 case class AggregatedData[P, S, V]( primaryKey: P, list: List[AttributeValue[S, V]] )
